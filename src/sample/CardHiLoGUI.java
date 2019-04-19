@@ -2,13 +2,17 @@ package sample;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -51,6 +55,7 @@ public class CardHiLoGUI extends Application {
     ProgressBar progBar;
     ProgressIndicator progInd;
 
+    ToggleGroup tg;
 
 
     public CardHiLoGUI(){
@@ -91,6 +96,25 @@ public class CardHiLoGUI extends Application {
         imgFirstCard = new Image(imageGenerator()); // Use the imageOpener method to return a string to here later
         imgVFirstCard = new ImageView();
 
+        //Now let's look at the middle section
+        lblNxtCard = new Label("Next card will be:");
+        rbHigher = new RadioButton("Higher");
+        rbLower = new RadioButton("Lower");
+        btnFirstCard = new Button("<- Deal First Card");
+        btnSecondCard = new Button("Deal Second Card ->");
+
+        tg = new ToggleGroup();
+        tg.getToggles().addAll(rbHigher,rbLower);
+        rbHigher.setToggleGroup(tg);
+        rbLower.setToggleGroup(tg);
+        rbHigher.setSelected(true);
+
+        // Now let's look at the second card
+        lblSecondCard = new Label("Second Card Dealt:");
+        imgSecondCard = new Image(imageGenerator());
+        imgVSecondCard = new ImageView();
+
+
     }
 
 
@@ -105,7 +129,7 @@ public class CardHiLoGUI extends Application {
 
         // Create a layout
 
-        VBox vb = new VBox(); //Note: I don't like dealing with gridpane - I find it easier, more intuitive and easier to manipulate a
+        VBox vb = new VBox(); //Note: I don't like dealing with gridpane - I find it more intuitive and easier to manipulate a
                                 // series of vertical and horizontal boxes.
 
         // Now to deal with the menubar and add it the the VBox
@@ -115,13 +139,40 @@ public class CardHiLoGUI extends Application {
         mBar.getMenus().addAll(menuFile, menuHelp);
         vb.getChildren().add(mBar);
 
-        //Now to deal with the first card:
+        //Now to deal with the first card: Put it in a vertical box
 
         VBox vbFirstCard = new VBox();
+        lblFirstCard.setPadding(new Insets(5));
+        //lblFirstCard.setTextAlignment(TextAlignment.CENTER);
         imgVFirstCard.setImage(imgFirstCard);
+        imgVFirstCard.setFitWidth(150);
+        imgVFirstCard.setFitHeight(250);
         vbFirstCard.getChildren().addAll(lblFirstCard, imgVFirstCard);
-        vb.getChildren().add(vbFirstCard);
 
+
+        // Now to deal with the middle section : Put it in a vertical box
+
+        VBox vbMiddleSection = new VBox();
+        vbMiddleSection.getChildren().addAll(lblNxtCard,rbHigher,rbLower,btnFirstCard,btnSecondCard);
+
+
+        // Now to deal with the second card: Put it in a vertical box
+
+        VBox vbSecondCard = new VBox();
+        lblSecondCard.setPadding(new Insets(5));
+        imgVSecondCard.setImage(imgSecondCard);
+        imgVSecondCard.setFitWidth(150);
+        imgVSecondCard.setFitHeight(250);
+        vbSecondCard.getChildren().addAll(lblSecondCard, imgVSecondCard);
+
+        // I want to put the three sections above into a horizontal box which ill subsequently add to the vertical box
+
+        HBox hb = new HBox();
+        hb.getChildren().addAll(vbFirstCard, vbMiddleSection, vbSecondCard);
+        hb.setSpacing(10);
+        hb.setAlignment(Pos.CENTER);
+
+        vb.getChildren().add(hb);
 
 
 
