@@ -176,14 +176,6 @@ public class CardHiLoGUI extends Application {
 
 
 
-
-
-
-
-
-
-
-
         // Create a scene
 
         Scene sc = new Scene(vb);
