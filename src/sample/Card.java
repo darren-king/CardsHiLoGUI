@@ -1,3 +1,5 @@
+package sample;
+
 public class Card {
 
     // I want to use integers to completely define cards
@@ -121,19 +123,17 @@ public class Card {
                 cardSuit = "hearts";
                 break;
             case 1:
-                cardSuit = "";
+                cardSuit = "diamonds";
                 break;
             case 2:
-                cardSuit = "";
+                cardSuit = "spades";
                 break;
             case 3:
-                cardSuit = "";
+                cardSuit = "clubs";
 
         }// end of cs switch
 
-
-
-
+        cardString = cardRank + "_of_" + cardSuit +".png";
 
         return cardString;
 
@@ -141,3 +141,6 @@ public class Card {
 
 
 }
+
+
+// Make a deck of cards class

@@ -92,7 +92,7 @@ public class CardHiLoGUI extends Application {
         menuAbout = new MenuItem("About");
 
         // Now let's look at the first card
-        lblFirstCard = new Label("First Card Dealt");
+        lblFirstCard = new Label("First sample.Card Dealt");
         imgFirstCard = new Image(imageGenerator()); // Use the imageOpener method to return a string to here later
         imgVFirstCard = new ImageView();
 
@@ -100,8 +100,8 @@ public class CardHiLoGUI extends Application {
         lblNxtCard = new Label("Next card will be:");
         rbHigher = new RadioButton("Higher");
         rbLower = new RadioButton("Lower");
-        btnFirstCard = new Button("<- Deal First Card");
-        btnSecondCard = new Button("Deal Second Card ->");
+        btnFirstCard = new Button("<- Deal First sample.Card");
+        btnSecondCard = new Button("Deal Second sample.Card ->");
 
         tg = new ToggleGroup();
         tg.getToggles().addAll(rbHigher,rbLower);
@@ -110,7 +110,7 @@ public class CardHiLoGUI extends Application {
         rbHigher.setSelected(true);
 
         // Now let's look at the second card
-        lblSecondCard = new Label("Second Card Dealt:");
+        lblSecondCard = new Label("Second sample.Card Dealt:");
         imgSecondCard = new Image(imageGenerator());
         imgVSecondCard = new ImageView();
 
@@ -123,7 +123,7 @@ public class CardHiLoGUI extends Application {
 
         // Create a stage
 
-        primaryStage.setTitle("Hi-Lo Card Game");
+        primaryStage.setTitle("Hi-Lo sample.Card Game");
         primaryStage.setWidth(600);
         primaryStage.setHeight(400);
 
