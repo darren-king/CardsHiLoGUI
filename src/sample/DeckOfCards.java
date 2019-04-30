@@ -4,12 +4,31 @@ public class DeckOfCards {
 
 
     private Card[] arrayOfCards;
+    private final int deckSize = 52;
 
-    public DeckOfCards (Card[] aOC){
-        this.arrayOfCards = aOC;
-    }
 
-    public Card[] getArrayOfCards() {
+    // Here's a constructor for a deck of cards
+    public DeckOfCards() {
+
+        arrayOfCards = new Card[deckSize];
+        int x = 0;
+
+        for (int r = 1; r <= 13; r++) {
+
+            for (int s = 0; s <= 3; s++) {
+
+                arrayOfCards[x] = new Card(r, s);
+                x++;
+
+            } // end of s loop
+
+        } // end of r loop
+
+    } // end of constructor
+
+
+    // This getter returns the deck of cards as an order array with aces first, 2's second and so forth - unshuffled
+    public Card[] getDeck() {
         return arrayOfCards;
     } //getter
 
@@ -17,28 +36,13 @@ public class DeckOfCards {
         this.arrayOfCards = arrayOfCards;
     } //setter
 
-    public DeckOfCards(){
-
-        arrayOfCards = new Card[52];
 
 
-        for (int s = 0; s<=3; s++){
-
-            for (int r = 1; r<=13; r++){
-
-                for (int a = 0; a<52; a++) {
-
-                    arrayOfCards[a] = new Card(r,s);
-
-                } // end of a loop
-
-            } // end of r loop
 
 
-        }// end of s loop
 
 
-    } // end of deck of cards
+
 
 
 
@@ -70,8 +74,9 @@ public class DeckOfCards {
 
         DeckOfCards newDeck = new DeckOfCards();
 
-        System.out.println(newDeck.arrayOfCards[12]);
-
+        for (int x = 0; x<newDeck.getDeck().length; x++){
+            System.out.println(newDeck.getDeck()[x]);
+        }
 
     }
 

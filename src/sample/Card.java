@@ -5,8 +5,8 @@ public class Card {
     // I want to use integers to completely define cards
     // e.g. 2,3 could define 2 of Diamonds
 
-    int rank = 0;
-    int suit = 0;
+    private int rank;
+    private int suit;
 
     public Card(){
         //TODO Auto-generated constructor stub
@@ -140,7 +140,17 @@ public class Card {
     }
 
 
+    public static void main (String args[]){
+
+        Card darren = new Card(2,3);
+
+        System.out.println(darren.toString());
+
+
+    }
+
 }
+
 
 
 // Make a deck of cards class
