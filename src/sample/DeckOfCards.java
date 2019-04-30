@@ -1,5 +1,7 @@
 package sample;
 
+import java.util.Random;
+
 public class DeckOfCards {
 
 
@@ -32,10 +34,30 @@ public class DeckOfCards {
         return arrayOfCards;
     } //getter
 
-    public void setArrayOfCards(Card[] arrayOfCards) {
-        this.arrayOfCards = arrayOfCards;
-    } //setter
 
+    public Card[] shuffleDeck(){
+
+        Card[] deckIn = getDeck();
+
+        Card[] deckOut = new Card[deckSize];
+
+        Card singleStore;
+
+        Random rand = new Random();
+
+
+        for(int x = 0; x<deckIn.length; x++){
+
+            int random = rand.nextInt(deckSize+1);
+
+            singleStore = deckIn[random];
+
+            deckOut[random] = singleStore;
+
+        }
+
+        return deckOut;
+    }
 
 
 
@@ -74,14 +96,32 @@ public class DeckOfCards {
 
         DeckOfCards newDeck = new DeckOfCards();
 
+        Card[] unshuffledCards = newDeck.getDeck();
+
         for (int x = 0; x<newDeck.getDeck().length; x++){
             System.out.println(newDeck.getDeck()[x]);
         }
+
+
+        Card[] shuffledCards = newDeck.shuffleDeck();
+
+        System.out.println("---------------------------");
+
+        for (int x = 0; x<shuffledCards.length; x++){
+            System.out.println(shuffledCards[x]);
+        }
+
+
+
+
+
+
+        }
+
 
     }
 
 
 
-}
 
 
