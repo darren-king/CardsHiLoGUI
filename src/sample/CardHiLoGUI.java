@@ -49,14 +49,25 @@ public class CardHiLoGUI extends Application {
     RadioButton rbHigher;
     RadioButton rbLower;
 
-    Button btnFirstCard;
-    Button btnSecondCard;
+    ToggleButton btnFirstCard;
+    ToggleButton btnSecondCard;
 
     ProgressBar progBar;
     ProgressIndicator progInd;
 
-    ToggleGroup tg;
+    ToggleGroup radioToggleGroup;
+    ToggleGroup buttonToggleGroup;
 
+    DeckOfCards DOC;
+
+    String imageName1;
+    String imageName2;
+
+    Card card1;
+    Card card2;
+
+
+    int counter;
 
     public CardHiLoGUI(){
         //TODO
@@ -64,11 +75,144 @@ public class CardHiLoGUI extends Application {
 
 
     //This method is going to deal generating the appropriate image
-    public String imageGenerator(){
+    public String imageGenerator(Card cardToBeImaged){
 
-        File file = new File("/Users/darrenking/Desktop/Cards/3C.png");
+        File file = new File("cards/" + cardToBeImaged.toString() ); // need to put the ending in here
 
         return file.toURI().toString();
+
+
+
+    }
+
+
+    // This method will run if a new game is initiated
+
+    public void newGame(){
+
+        // I need a deck of cards - setting up the cards.
+
+        DOC = new DeckOfCards(); // this creates a deck of cards for us to start playing - these don't exist until a newGame is started
+
+        //I'm setting the image on the deck of cards to start
+
+        imgVFirstCard.setImage(imgFirstCard);
+        imgVSecondCard.setImage(imgSecondCard);
+
+        // I'll need this counter for scoring
+        counter = 0;
+
+        DOC.shuffleDeck(); // no point in having a deck in order
+
+        // Now setting up the radio buttons
+
+        rbHigher.setDisable(false);
+        rbLower.setDisable(false);
+
+        btnFirstCard.setDisable(false);
+
+
+        btnFirstCard.setOnAction(actionEvent -> {
+
+            lblWinnerOrLoser.setVisible(false);
+
+            card1 = DOC.dealTopCard();
+
+            Image img = new Image(imageGenerator(card1));
+
+            imgVFirstCard.setImage(img);
+
+            /* btnSecondCard.selectedProperty().addListener((observable, oldValue, newValue) -> {
+
+                //If selected, which I will turn to true to attract the users attention to it after I've written this code
+                // Change the CSS and duplicate in btnSecond Card
+
+                if (newValue) {
+                    btnSecondCard.setStyle(
+                            "-fx-background-color:red;" +
+                                    "-fx-text-fill: white");
+                } else {
+                    btnSecondCard.setStyle(null);
+                }
+
+                } ); */
+
+            btnFirstCard.setDisable(true); // So the first card can't be pressed again until the second card has been selected
+
+            btnSecondCard.setDisable(false);
+
+
+        }); // end of set on action for first card
+
+        btnSecondCard.setOnAction(actionEvent -> {
+
+            card2 = DOC.dealTopCard();
+
+            Image img2 = new Image(imageGenerator(card2));
+
+            imgVSecondCard.setImage(img2);
+
+            /* btnFirstCard.selectedProperty().addListener((observable, oldValue, newValue) -> {
+
+                //If selected, which I will turn to true to attract the users attention to it after I've written this code
+                // Change the CSS and duplicate in btnSecond Card
+
+                if (newValue) {
+                    btnFirstCard.setStyle(
+                            "-fx-background-color:red;" +
+                                    "-fx-text-fill: white");
+                } else {
+                    btnFirstCard.setStyle(null);
+                }
+
+            } ); */
+
+            btnSecondCard.setDisable(true);
+
+            // Now implement the comparison logic and scoring - do this in a separate method to separate out the code
+
+            compareCards();
+
+
+        });
+
+
+
+
+
+    } // end of new game
+
+
+    public void compareCards(){
+
+
+        String message;
+
+        boolean higher = rbHigher.isSelected();
+
+        boolean lower = rbLower.isSelected();
+
+
+        if (higher && card2.rankIsGreaterThan(card1)){
+            message = "You guessed that your card would be higher. You win this round!";
+            counter++;
+        } else if (lower && card2.rankIsLessThan(card1)){
+            message = "You guessed that your card would be lower. You win this round!";
+            counter++;
+        } else if ((higher || lower) && (card2.rankIsEqualTo(card1))){
+            message = "It's a draw.";
+        } else if (higher && card2.rankIsLessThan(card1)) {
+            message = "You guessed that your card would be higher. You lose this round!";
+        } else {
+            message = "You guessed that your card would be lower. You lose this round!";
+        }
+
+        lblWinnerOrLoser.setText(message);
+
+        lblWinnerOrLoser.setVisible(true);
+
+        btnFirstCard.setDisable(false);
+
 
     }
 
@@ -92,27 +236,47 @@ public class CardHiLoGUI extends Application {
         menuAbout = new MenuItem("About");
 
         // Now let's look at the first card
-        lblFirstCard = new Label("First sample.Card Dealt");
-        imgFirstCard = new Image(imageGenerator()); // Use the imageOpener method to return a string to here later
+
+        imageName1 = new File("cards/blue_back.png").toURI().toString();
+        lblFirstCard = new Label("First Card Dealt");
+        imgFirstCard = new Image(imageName1); // Use the imageOpener method to return a string to here later
         imgVFirstCard = new ImageView();
 
         //Now let's look at the middle section
         lblNxtCard = new Label("Next card will be:");
         rbHigher = new RadioButton("Higher");
         rbLower = new RadioButton("Lower");
-        btnFirstCard = new Button("<- Deal First sample.Card");
-        btnSecondCard = new Button("Deal Second sample.Card ->");
+        btnFirstCard = new ToggleButton("<- Deal First Card");
+        btnSecondCard = new ToggleButton("Deal Second Card ->");
 
-        tg = new ToggleGroup();
-        tg.getToggles().addAll(rbHigher,rbLower);
-        rbHigher.setToggleGroup(tg);
-        rbLower.setToggleGroup(tg);
-        rbHigher.setSelected(true);
+        // I want to put the buttons in a toggle group as well
+
+        buttonToggleGroup = new ToggleGroup();
+        buttonToggleGroup.getToggles().addAll(btnFirstCard, btnSecondCard);
+        btnFirstCard.setToggleGroup(buttonToggleGroup);
+        btnSecondCard.setToggleGroup(buttonToggleGroup);
+        btnFirstCard.setDisable(true); // I want both buttons disabled when the game opens
+        btnSecondCard.setDisable(true);
+
+        radioToggleGroup = new ToggleGroup();
+        radioToggleGroup.getToggles().addAll(rbHigher,rbLower);
+        rbHigher.setToggleGroup(radioToggleGroup);
+        rbLower.setToggleGroup(radioToggleGroup);
+        rbHigher.setDisable(true); // I want both buttons disabled when the game opens
+        rbLower.setDisable(true);
 
         // Now let's look at the second card
-        lblSecondCard = new Label("Second sample.Card Dealt:");
-        imgSecondCard = new Image(imageGenerator());
+        imageName2 = new File("cards/blue_back.png").toURI().toString();
+        lblSecondCard = new Label("Second Card Dealt:");
+        imgSecondCard = new Image(imageName2);
         imgVSecondCard = new ImageView();
+
+        lblWinnerOrLoser = new Label();
+
+
+        // Now to deal with clicking on the menuNewGame
+
+        menuNewGame.setOnAction(actionEvent -> newGame()); //I've created a method above for New Game to seperate out the code
 
 
     }
@@ -123,7 +287,7 @@ public class CardHiLoGUI extends Application {
 
         // Create a stage
 
-        primaryStage.setTitle("Hi-Lo sample.Card Game");
+        primaryStage.setTitle("Hi-Lo Card Game");
         primaryStage.setWidth(600);
         primaryStage.setHeight(400);
 
@@ -165,7 +329,7 @@ public class CardHiLoGUI extends Application {
         imgVSecondCard.setFitHeight(250);
         vbSecondCard.getChildren().addAll(lblSecondCard, imgVSecondCard);
 
-        // I want to put the three sections above into a horizontal box which ill subsequently add to the vertical box
+        // I want to put the three sections above into a horizontal box which i'll subsequently add to the vertical box
 
         HBox hb = new HBox();
         hb.getChildren().addAll(vbFirstCard, vbMiddleSection, vbSecondCard);
@@ -173,6 +337,10 @@ public class CardHiLoGUI extends Application {
         hb.setAlignment(Pos.CENTER);
 
         vb.getChildren().add(hb);
+
+        vb.getChildren().add(lblWinnerOrLoser);
+        lblWinnerOrLoser.setTextAlignment(TextAlignment.CENTER);
+        lblWinnerOrLoser.setAlignment(Pos.CENTER);
 
 
 

@@ -140,17 +140,4 @@ public class Card {
     }
 
 
-    public static void main (String args[]){
-
-        Card darren = new Card(2,3);
-
-        System.out.println(darren.toString());
-
-
-    }
-
 }
-
-
-
-// Make a deck of cards class
