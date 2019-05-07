@@ -1,24 +1,22 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class CardHiLoGUI extends Application {
 
@@ -35,6 +33,7 @@ public class CardHiLoGUI extends Application {
     MenuItem menuShuffle;
     MenuItem menuExit;
     MenuItem menuAbout;
+    MenuItem menuHowToPlay;
 
     Label lblFirstCard;
     Label lblSecondCard;
@@ -66,6 +65,9 @@ public class CardHiLoGUI extends Application {
     Card card1;
     Card card2;
 
+    Label secondaryStageLabel;
+    Button secondaryStageOK;
+
 
     int counter;
 
@@ -81,8 +83,6 @@ public class CardHiLoGUI extends Application {
 
         return file.toURI().toString();
 
-
-
     }
 
 
@@ -93,6 +93,10 @@ public class CardHiLoGUI extends Application {
         // I need a deck of cards - setting up the cards.
 
         DOC = new DeckOfCards(); // this creates a deck of cards for us to start playing - these don't exist until a newGame is started
+
+        //Make shuffle available
+
+        menuShuffle.setDisable(false);
 
         //I'm setting the image on the deck of cards to start
 
@@ -114,13 +118,15 @@ public class CardHiLoGUI extends Application {
 
         btnFirstCard.setOnAction(actionEvent -> {
 
-            lblWinnerOrLoser.setVisible(false);
+            if (!DOC.isEmpty()) { //  need to make sure there's a card to deal.
 
-            card1 = DOC.dealTopCard();
+                lblWinnerOrLoser.setVisible(false);
 
-            Image img = new Image(imageGenerator(card1));
+                card1 = DOC.dealTopCard();
 
-            imgVFirstCard.setImage(img);
+                Image img = new Image(imageGenerator(card1));
+
+                imgVFirstCard.setImage(img);
 
             /* btnSecondCard.selectedProperty().addListener((observable, oldValue, newValue) -> {
 
@@ -137,20 +143,33 @@ public class CardHiLoGUI extends Application {
 
                 } ); */
 
-            btnFirstCard.setDisable(true); // So the first card can't be pressed again until the second card has been selected
+                btnFirstCard.setDisable(true); // So the first card can't be pressed again until the second card has been selected
 
-            btnSecondCard.setDisable(false);
+                btnSecondCard.setDisable(false);
+
+            } else {
+
+                String message = "Uh-oh - Someone's out of cards!";
+                btnFirstCard.setDisable(true);
+                btnSecondCard.setDisable(true);
+                menuShuffle.setDisable(true);
+
+                secondaryStage("Uh-oh - Someone's out of cards!");
+
+            }
 
 
         }); // end of set on action for first card
 
         btnSecondCard.setOnAction(actionEvent -> {
 
-            card2 = DOC.dealTopCard();
+            if(!DOC.isEmpty() && (rbHigher.isSelected() || rbLower.isSelected())) {
 
-            Image img2 = new Image(imageGenerator(card2));
+                card2 = DOC.dealTopCard();
 
-            imgVSecondCard.setImage(img2);
+                Image img2 = new Image(imageGenerator(card2));
+
+                imgVSecondCard.setImage(img2);
 
             /* btnFirstCard.selectedProperty().addListener((observable, oldValue, newValue) -> {
 
@@ -167,12 +186,32 @@ public class CardHiLoGUI extends Application {
 
             } ); */
 
-            btnSecondCard.setDisable(true);
+                btnSecondCard.setDisable(true);
 
-            // Now implement the comparison logic and scoring - do this in a separate method to separate out the code
+                // Now implement the comparison logic and scoring - do this in a separate method to separate out the code
 
-            compareCards();
+                compareCards();
 
+                rbHigher.setSelected(false);
+                rbLower.setSelected(false);
+
+            } else if (DOC.isEmpty()) {
+
+                String message = "Uh-oh - Someone's out of cards!";
+                btnFirstCard.setDisable(true);
+                btnSecondCard.setDisable(true);
+                menuShuffle.setDisable(true);
+
+                lblWinnerOrLoser.setText(message);
+                lblWinnerOrLoser.setVisible(true);
+
+            } else {
+
+                String message = "You have to decide if the next card dealt is going to be higher or lower!";
+
+                secondaryStage(message);
+
+            }
 
         });
 
@@ -188,35 +227,163 @@ public class CardHiLoGUI extends Application {
 
         String message;
 
+        double progValue = progBar.getProgress();
+
         boolean higher = rbHigher.isSelected();
 
         boolean lower = rbLower.isSelected();
 
 
         if (higher && card2.rankIsGreaterThan(card1)){
-            message = "You guessed that your card would be higher. You win this round!";
+            message = "You guessed that your card would be higher. You win this round! ";
             counter++;
+            progValue = progValue + 0.2;
         } else if (lower && card2.rankIsLessThan(card1)){
-            message = "You guessed that your card would be lower. You win this round!";
+            message = "You guessed that your card would be lower. You win this round! ";
             counter++;
+            progValue = progValue + 0.2;
         } else if ((higher || lower) && (card2.rankIsEqualTo(card1))){
-            message = "It's a draw.";
+            message = "It's a draw. ";
         } else if (higher && card2.rankIsLessThan(card1)) {
-            message = "You guessed that your card would be higher. You lose this round!";
+            message = "You guessed that your card would be higher. You lose this round! ";
+            counter = 0;
+            progValue = 0;
         } else {
-            message = "You guessed that your card would be lower. You lose this round!";
+            message = "You guessed that your card would be lower. You lose this round! ";
+            counter = 0;
+            progValue = 0;
         }
 
-        lblWinnerOrLoser.setText(message);
+        if (counter == 5) {
+            secondaryStage("Congratulations. You won!");
+            btnFirstCard.setDisable(true);
+            btnSecondCard.setDisable(true);
+            menuShuffle.setDisable(true);
+        }
+
+        lblWinnerOrLoser.setText(message + "Score: " + counter);
 
         lblWinnerOrLoser.setVisible(true);
+
+        progBar.setProgress(progValue);
+        progInd.setProgress(progValue);
 
         btnFirstCard.setDisable(false);
 
 
     }
 
+    // Here I'm creating a method to read the instruction from a text file and feed them to the secondary stage
+    // created below for when the user wants instructions on how  to play the game.
 
+    public String howToPlay(){
+
+       String rules = "";
+
+       try {
+
+           rules = new String(Files.readAllBytes(Paths.get("readme.txt")));
+
+           return rules;
+
+       }
+       catch (IOException e) {
+           System.out.println("Error" + e.getMessage());
+       }
+
+       return rules;
+
+
+    }
+
+
+    // I want to create a secondary stage for when a player wins, loses, is out of cards etc.
+
+    public void secondaryStage(String messageToStage){
+
+        //Create the stage:
+        Stage secondaryStage = new Stage();
+
+        secondaryStage.setTitle("We've a message for you!");
+        secondaryStage.setHeight(150);
+        secondaryStage.setWidth(500);
+        secondaryStage.setResizable(false);
+
+
+        //Create a layout
+
+        VBox vb  = new VBox();
+        HBox hb1 = new HBox();
+        HBox hb2 = new HBox();
+
+
+        // I want different the button to say and do different things depending on the reason the secondary
+        // stage has been called.
+        // I equally want my message to be  different depending on the reason the stage was called.
+        if (messageToStage == ("Uh-oh - Someone's out of cards!") || messageToStage == ("Congratulations. You won!")){
+            secondaryStageLabel = new Label(messageToStage);
+            secondaryStageOK = new Button("New Game?");
+            secondaryStageOK.setOnAction(actionEvent -> {
+                newGame();
+                secondaryStage.close();
+            });
+        } else if (messageToStage == "How To Play"){
+            secondaryStage.setWidth(800);
+            secondaryStage.setHeight(600);
+            messageToStage = howToPlay();
+            secondaryStageLabel = new Label(messageToStage);
+            secondaryStageOK = new Button ("Got It!");
+            secondaryStageOK.setOnAction(actionEvent -> {
+               secondaryStage.close();
+            });
+        } else if (messageToStage == "About"){
+            messageToStage = "Darren King - 2989670";
+            secondaryStageLabel = new Label(messageToStage);
+            secondaryStageOK = new Button("OK");
+            secondaryStageOK.setOnAction(actionEvent -> {
+                secondaryStage.close();
+            });
+        }
+
+        else {
+            secondaryStageOK = new Button("OK");
+            secondaryStageOK.setOnAction(actionEvent -> {
+                secondaryStage.close();
+            });
+        }
+
+
+        //Add elements to the layout
+
+        hb1.getChildren().add(secondaryStageLabel);
+        hb1.setPadding(new Insets(20,0,0,0));
+        hb1.setAlignment(Pos.CENTER);
+
+        hb2.getChildren().add(secondaryStageOK);
+        hb2.setPadding(new Insets(20,0,0,0));
+        hb2.setAlignment(Pos.CENTER);
+
+        vb.getChildren().addAll(hb1, hb2);
+
+        //create a scene and give it the layout
+
+        Scene sc2 = new Scene(vb);
+
+        //Style the scene
+
+        sc2.getStylesheets().add("https://fonts.googleapis.com/css?family=Aldrich");
+        sc2.getStylesheets().add("funkyfunk.css");
+
+        //Set the scene
+
+        secondaryStage.setScene(sc2);
+
+        // Show the stage
+
+        secondaryStage.show();
+
+
+    }
 
 
     @Override
@@ -232,13 +399,14 @@ public class CardHiLoGUI extends Application {
         menuHelp = new Menu("Help");
         menuNewGame = new MenuItem("New Game");
         menuShuffle = new MenuItem("Shuffle");
-        menuExit = new MenuItem("Exit");
+        menuExit = new MenuItem("Exit"); menuExit.setOnAction(actionEvent -> exit()); // The method is at the very end
         menuAbout = new MenuItem("About");
+        menuHowToPlay = new MenuItem("How To Play"); menuHowToPlay.setOnAction(actionEvent -> secondaryStage("How To Play"));
 
         // Now let's look at the first card
 
-        imageName1 = new File("cards/blue_back.png").toURI().toString();
-        lblFirstCard = new Label("First Card Dealt");
+        imageName1 = new File("cards/card_back_blue.png").toURI().toString();
+        lblFirstCard = new Label("First Card Dealt:");
         imgFirstCard = new Image(imageName1); // Use the imageOpener method to return a string to here later
         imgVFirstCard = new ImageView();
 
@@ -266,17 +434,25 @@ public class CardHiLoGUI extends Application {
         rbLower.setDisable(true);
 
         // Now let's look at the second card
-        imageName2 = new File("cards/blue_back.png").toURI().toString();
+        imageName2 = new File("cards/card_back_blue.png").toURI().toString();
         lblSecondCard = new Label("Second Card Dealt:");
         imgSecondCard = new Image(imageName2);
         imgVSecondCard = new ImageView();
 
         lblWinnerOrLoser = new Label();
 
+        progBar = new ProgressBar(0);
+        progInd = new ProgressIndicator(0);
+
+
 
         // Now to deal with clicking on the menuNewGame
 
         menuNewGame.setOnAction(actionEvent -> newGame()); //I've created a method above for New Game to seperate out the code
+
+        // If you'rew going to shuffle the cards you need to have a deck and hence need to be in a game - therefore to shuffle the cards will start a new game.
+        menuShuffle.setDisable(true);
+        menuShuffle.setOnAction(actionEvent -> newGame());
 
 
     }
@@ -288,8 +464,9 @@ public class CardHiLoGUI extends Application {
         // Create a stage
 
         primaryStage.setTitle("Hi-Lo Card Game");
-        primaryStage.setWidth(600);
-        primaryStage.setHeight(400);
+        primaryStage.setWidth(700);
+        primaryStage.setHeight(450);
+        primaryStage.setResizable(false);
 
         // Create a layout
 
@@ -299,17 +476,17 @@ public class CardHiLoGUI extends Application {
         // Now to deal with the menubar and add it the the VBox
 
         menuFile.getItems().addAll(menuNewGame, menuShuffle, menuExit);
-        menuHelp.getItems().addAll(menuAbout);
+        menuHelp.getItems().addAll(menuAbout, menuHowToPlay);
         mBar.getMenus().addAll(menuFile, menuHelp);
         vb.getChildren().add(mBar);
 
         //Now to deal with the first card: Put it in a vertical box
 
         VBox vbFirstCard = new VBox();
-        lblFirstCard.setPadding(new Insets(5));
+        lblFirstCard.setPadding(new Insets(5,5,10,5));
         //lblFirstCard.setTextAlignment(TextAlignment.CENTER);
         imgVFirstCard.setImage(imgFirstCard);
-        imgVFirstCard.setFitWidth(150);
+        imgVFirstCard.setFitWidth(175);
         imgVFirstCard.setFitHeight(250);
         vbFirstCard.getChildren().addAll(lblFirstCard, imgVFirstCard);
 
@@ -318,14 +495,20 @@ public class CardHiLoGUI extends Application {
 
         VBox vbMiddleSection = new VBox();
         vbMiddleSection.getChildren().addAll(lblNxtCard,rbHigher,rbLower,btnFirstCard,btnSecondCard);
+        btnFirstCard.setPrefWidth(200);
+        btnSecondCard.setPrefWidth(200);
+        vbMiddleSection.setPadding(new Insets(30,15,0,15));
+        vbMiddleSection.setSpacing(10);
+
+
 
 
         // Now to deal with the second card: Put it in a vertical box
 
         VBox vbSecondCard = new VBox();
-        lblSecondCard.setPadding(new Insets(5));
+        lblSecondCard.setPadding(new Insets(5,5,10,5));
         imgVSecondCard.setImage(imgSecondCard);
-        imgVSecondCard.setFitWidth(150);
+        imgVSecondCard.setFitWidth(175);
         imgVSecondCard.setFitHeight(250);
         vbSecondCard.getChildren().addAll(lblSecondCard, imgVSecondCard);
 
@@ -334,19 +517,51 @@ public class CardHiLoGUI extends Application {
         HBox hb = new HBox();
         hb.getChildren().addAll(vbFirstCard, vbMiddleSection, vbSecondCard);
         hb.setSpacing(10);
+        hb.setPadding(new Insets(20,0,0,0));
         hb.setAlignment(Pos.CENTER);
 
         vb.getChildren().add(hb);
 
-        vb.getChildren().add(lblWinnerOrLoser);
-        lblWinnerOrLoser.setTextAlignment(TextAlignment.CENTER);
-        lblWinnerOrLoser.setAlignment(Pos.CENTER);
+
+
+        // This will deal with the winner or loser label
+        HBox hbWinOrLose = new HBox();
+
+        //Pad the central with two outer Hbox - it's a 'hacky' way to do what I want but it works nicely
+        // Effectively I'm putting two boxes either side of my label and these boxes will expand and shrink to centre muy label
+        // according to the text within it.
+        HBox hb1 = new HBox();
+        hb1.setHgrow(hb1, Priority.ALWAYS);
+        HBox hb2 = new HBox();
+        hb2.setHgrow(hb2, Priority.ALWAYS);
+        hbWinOrLose.getChildren().addAll(hb1, lblWinnerOrLoser, hb2);
+        hbWinOrLose.setPadding(new Insets(10,0,0,0));
+        vb.getChildren().add(hbWinOrLose);
+
+
+        // Now put the progress bar and progress indicator in a Hbox to be added to the Vbox
+
+        HBox hbProg = new HBox();
+        progBar.setPrefWidth(300);
+        hbProg.getChildren().addAll(progBar, progInd);
+        hbProg.setSpacing(10);
+        hbProg.setPadding(new Insets(15,0,0,0));
+        hbProg.setAlignment(Pos.CENTER);
+
+
+        vb.getChildren().add(hbProg);
 
 
 
         // Create a scene
 
         Scene sc = new Scene(vb);
+
+        // Style the scene
+
+        // Let's change the fonts with a style sheet - and some funky fonts from google fonts
+        sc.getStylesheets().add("https://fonts.googleapis.com/css?family=Aldrich");
+        sc.getStylesheets().add("funkyfunk.css");
 
         //Set the scene
 
@@ -356,12 +571,15 @@ public class CardHiLoGUI extends Application {
 
         primaryStage.show();
 
+    }
 
-
+    public void exit(){
+        Platform.exit();
     }
 
 
     public static void main(String[] args) {
         launch(args);
     }
+
 }
