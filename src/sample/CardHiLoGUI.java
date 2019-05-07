@@ -115,6 +115,12 @@ public class CardHiLoGUI extends Application {
 
         btnFirstCard.setDisable(false);
 
+        //What if we shuffle here?? This is shuffling the4 all ready shuffled dealt deck
+        //If we call it after x number of cards have been dealt it's shuffling the remainder of the cards
+        //Is this of value?? I don't think so.
+        //The alternative, which I had coded below was that shuffle would just start a new game.
+        menuShuffle.setOnAction(actionEvent -> DOC.shuffleDeck());
+
 
         btnFirstCard.setOnAction(actionEvent -> {
 
@@ -202,8 +208,7 @@ public class CardHiLoGUI extends Application {
                 btnSecondCard.setDisable(true);
                 menuShuffle.setDisable(true);
 
-                lblWinnerOrLoser.setText(message);
-                lblWinnerOrLoser.setVisible(true);
+                secondaryStage(message);
 
             } else {
 
@@ -282,7 +287,7 @@ public class CardHiLoGUI extends Application {
 
        try {
 
-           rules = new String(Files.readAllBytes(Paths.get("readme.txt")));
+           rules = new String(Files.readAllBytes(Paths.get("howToPlay.txt")));
 
            return rules;
 
@@ -328,8 +333,9 @@ public class CardHiLoGUI extends Application {
                 secondaryStage.close();
             });
         } else if (messageToStage == "How To Play"){
+            secondaryStage.setTitle("How To Play...");
             secondaryStage.setWidth(800);
-            secondaryStage.setHeight(600);
+            secondaryStage.setHeight(500);
             messageToStage = howToPlay();
             secondaryStageLabel = new Label(messageToStage);
             secondaryStageOK = new Button ("Got It!");
@@ -338,6 +344,7 @@ public class CardHiLoGUI extends Application {
             });
         } else if (messageToStage == "About"){
             messageToStage = "Darren King - 2989670";
+            secondaryStage.setTitle("About");
             secondaryStageLabel = new Label(messageToStage);
             secondaryStageOK = new Button("OK");
             secondaryStageOK.setOnAction(actionEvent -> {
@@ -400,7 +407,7 @@ public class CardHiLoGUI extends Application {
         menuNewGame = new MenuItem("New Game");
         menuShuffle = new MenuItem("Shuffle");
         menuExit = new MenuItem("Exit"); menuExit.setOnAction(actionEvent -> exit()); // The method is at the very end
-        menuAbout = new MenuItem("About");
+        menuAbout = new MenuItem("About"); menuAbout.setOnAction(actionEvent -> secondaryStage("About"));
         menuHowToPlay = new MenuItem("How To Play"); menuHowToPlay.setOnAction(actionEvent -> secondaryStage("How To Play"));
 
         // Now let's look at the first card
@@ -452,7 +459,7 @@ public class CardHiLoGUI extends Application {
 
         // If you'rew going to shuffle the cards you need to have a deck and hence need to be in a game - therefore to shuffle the cards will start a new game.
         menuShuffle.setDisable(true);
-        menuShuffle.setOnAction(actionEvent -> newGame());
+        // menuShuffle.setOnAction(actionEvent -> newGame());
 
 
     }
